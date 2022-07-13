@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const nodemailer = require('nodemailer');
+const mg = require('nodemailer-mailgun-transport');
 
 const app = express();
 const port = process.env.PORT ||5000;
@@ -13,6 +15,15 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.beeqz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+
+const auth = {
+    auth: {
+      api_key: '8e6ef823066861f2d523e62197826353-18e06deb-dacdf9ce',
+      domain: 'sandbox706047905f2a4e09864d301838ea6e51.mailgun.org'
+    }
+  }
+
+  const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
 async function run () {
     try{
@@ -37,6 +48,30 @@ async function run () {
             const filter = {_id: ObjectId(id)};
             const result = await dataCollection.deleteOne(filter);
             res.send(result);
+        });
+
+        app.post('/email', async(req, res) => {
+            const info = req.body;
+            nodemailerMailgun.sendMail({
+                from: 'xyz@gmail.com',
+                to: 'mdomarfaruk149518@gmail.com',
+                subject: 'Send mail from intersshala assesment.',
+                html:`<h1>${info.name}'s info is saved on mongodb. </h1>
+                <h3>Detail info</h3>
+                <p>Name: ${info.name}</p>
+                <p>Email: ${info.email}</p>
+                <p>Phone Number: ${info.phoneNumber}</p>
+                <p>Hobby: ${info.hobbies}</p>`,
+                text: '<b>Wow Big powerful letters</b>'
+              }, (err, info) => {
+                if (err) {
+                  console.log(`Error: ${err}`);
+                }
+                else {
+                  console.log(`Response: ${info}`);
+                }
+              });
+            res.send({status: true});
         })
     }
     finally{
