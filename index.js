@@ -18,11 +18,11 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 const auth = {
     auth: {
-      api_key: '8e6ef823066861f2d523e62197826353-18e06deb-dacdf9ce',
-      domain: 'sandbox706047905f2a4e09864d301838ea6e51.mailgun.org'
+      api_key: `${process.env.MAILGUN_API_KEY}`,
+      domain: `${process.env.MAILGUN_DOMAIN}`
     }
   }
-
+  
   const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
 async function run () {
